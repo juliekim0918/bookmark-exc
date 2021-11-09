@@ -6,7 +6,7 @@ const morgan = require('morgan');
 const app = express();
 app.use(morgan('dev'))
 app.use('/', require('./routes/bookmarks'))
-app.use(require('method-override')('_method'));
+
 app.use(express.urlencoded({ extended: false }));
 
 const startApp = async () => {

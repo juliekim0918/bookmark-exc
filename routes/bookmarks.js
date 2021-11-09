@@ -1,5 +1,7 @@
 const app = require('express').Router();
 const { conn, syncAndSeed, models: { Website }} = require('../db')
+app.use(require("method-override")("_method"));
+
 
 app.get("/", async (req, res, next) => {
   try {
@@ -16,7 +18,6 @@ app.get("/", async (req, res, next) => {
       return acc;
     }, {});
 
-    console.log(categoryObj);
     const categoryKeys = Object.keys(categoryObj);
     const HTML = `
         <!DOCTYPE html>
@@ -54,26 +55,24 @@ app.get("/", async (req, res, next) => {
 });
 
 
-app.delete('/bookmarks/:category', async (req, res, next) => {
-    try {
-        const bookmark = await Website.findByPk(req.params.id)
-        await bookmark.destroy();
-        res.redirect(`/bookmarks/${category}`)
-    } catch (e) {
-        next(e)
-    }
-
-})
+app.delete("/bookmarks/:id", async (req, res, next) => {
+  try {
+    const bookmark = await Website.findByPk(req.params.id);
+    const category = bookmark.category;
+    await bookmark.destroy();
+    res.redirect(`/bookmarks/${category}`);
+  } catch (e) {
+    next(e);
+  }
+});
 
 
 app.get("/bookmarks/:category", async (req, res, next) => {
   try {
-      
     const category = req.params.category;
     const allBookmarksInCategory = await Website.findAndCountAll({
       where: { category },
     });
-
     const HTML = `
         <!DOCTYPE html>
         <html lang="en">
@@ -109,6 +108,7 @@ app.get("/bookmarks/:category", async (req, res, next) => {
     console.log(e);
   }
 });
+
 
 
 module.exports = app
